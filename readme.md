@@ -1,6 +1,8 @@
 ## Release notes
 ### vNext
 *
+### v1.2.0
+* Updated `native.html` URL
 ### v1.1.0
 * Add optional onboarding token parameter to init method
 ### v1.0.0

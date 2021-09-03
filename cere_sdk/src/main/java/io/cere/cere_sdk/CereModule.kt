@@ -10,7 +10,7 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebView
 
 
-const val baseUrl: String = "https://s3-us-west-2.amazonaws.com/sdk-common.cere.io/native.html"
+const val baseUrl: String = "https://sdk.dev.cere.io/common/native.html"
 
 /**
  * Interface used after `CereModule` init method.
