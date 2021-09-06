@@ -6,27 +6,14 @@ import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.webkit.JavascriptInterface
-import android.webkit.WebView
-
+import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams.*
+import android.webkit.*
+import io.cere.cere_sdk.handlers.OnEventReceivedHandler
+import io.cere.cere_sdk.handlers.OnInitializationErrorHandler
+import io.cere.cere_sdk.handlers.OnInitializationFinishedHandler
 
 const val baseUrl: String = "https://sdk.dev.cere.io/common/native.html"
-
-/**
- * Interface used after `CereModule` init method.
- * Executed after successful initialization.
- */
-interface OnInitializationFinishedHandler {
-    fun handle()
-}
-
-/**
- * Interface used after `CereModule` init method.
- * Executed after initialization error.
- */
-interface OnInitializationErrorHandler {
-    fun handle(error: String)
-}
 
 /**
  * This is the main class which incapsulates all logic (opening/closing activity etc) and
@@ -71,51 +58,37 @@ class CereModule(private val context: Context) {
 
     companion object {
         const val TAG = "CereModule"
+
         @Volatile
         private var instance: CereModule? = null
-        @JvmStatic private fun make(context: Context): CereModule {
-            val module = CereModule(context).configureWebView()
-            instance = module
-            return module
-        }
-        @JvmStatic fun getInstance(application: Application): CereModule {
-            val inst = this.instance
-            if (inst != null) {
-                return inst
-            } else {
-                return make(application.applicationContext)
+
+        @JvmStatic
+        private fun make(context: Context): CereModule =
+            CereModule(context).configureWebView().apply {
+                instance = this
             }
-        }
+
+        @JvmStatic
+        fun getInstance(application: Application): CereModule =
+            instance ?: make(application.applicationContext)
     }
 
-    var onInitializationFinishedHandler: OnInitializationFinishedHandler = object: OnInitializationFinishedHandler {
-        override fun handle() {
+    var onInitializationFinishedHandler: OnInitializationFinishedHandler? = null
 
-        }
-    }
+    var onInitializationErrorHandler: OnInitializationErrorHandler? = null
 
-    var onInitializationErrorHandler: OnInitializationErrorHandler = object: OnInitializationErrorHandler {
-        override fun handle(error: String) {
-
-        }
-    }
+    var onEventReceivedHandler: OnEventReceivedHandler? = null
 
     lateinit var webview: WebView
+
+    var initStatus: InitStatus = InitStatus.Uninitialised
+        private set
 
     private lateinit var appId: String
     private lateinit var integrationPartnerUserId: String
     private lateinit var token: String
 
-    private var initStatus: InitStatus = InitStatus.Uninitialised
-
     private val version: String = io.cere.cere_sdk.BuildConfig.VERSION_NAME
-
-    /**
-     * @return current sdk initialization status instance of {@code InitStatus}
-     */
-    fun getInitStatus(): InitStatus {
-        return this.initStatus
-    }
 
     /**
      * Initializes and prepares the SDK for usage.
@@ -128,22 +101,11 @@ class CereModule(private val context: Context) {
         this.appId = appId
         this.integrationPartnerUserId = integrationPartnerUserId
         this.token = token
-        val url = "${baseUrl}?appId=${appId}&integrationPartnerUserId=${integrationPartnerUserId}&platform=android&version=${version}&env=${env}&token=${token}"
+        val url =
+            "${baseUrl}?appId=${appId}&integrationPartnerUserId=${integrationPartnerUserId}&platform=android&version=${version}&env=${env}&token=${token}"
         Log.i(TAG, "load url ${url}")
-        this.initStatus = InitStatus.Initialising
-        this.webview.loadUrl(url)
-    }
-
-    private fun configureWebView(): CereModule {
-        val webview = WebView(context)
-        webview.settings.javaScriptEnabled = true
-        webview.settings.domStorageEnabled = true
-        webview.settings.databaseEnabled = true
-        //WebView.setWebContentsDebuggingEnabled(true)
-
-        webview.addJavascriptInterface(this, "Android")
-        this.webview = webview
-        return this
+        initStatus = InitStatus.Initialising
+        webview.loadUrl(url)
     }
 
     /**
@@ -152,7 +114,7 @@ class CereModule(private val context: Context) {
      * @param payload: Optional parameter which can be passed with event. It should contain serialised json payload associated with eventType.
      */
     fun sendEvent(eventType: String, payload: String = "") {
-        if (this.initStatus == InitStatus.Initialised) {
+        if (initStatus == InitStatus.Initialised) {
             val script = """
                 (async function() {
                     console.log('send event dialog');
@@ -165,37 +127,61 @@ class CereModule(private val context: Context) {
                         });
                 })();""".trimIndent()
 
-            val handler = Handler(Looper.getMainLooper())
-
-            handler.post{
-                Log.i(TAG, "evaluate send event javascript")
-                webview.evaluateJavascript(script)
-                {
-                    Log.i(TAG, "send event $eventType executed")
+            Handler(Looper.getMainLooper())
+                .post {
+                    Log.i(TAG, "evaluate send event javascript")
+                    webview.evaluateJavascript(script) {
+                        Log.i(TAG, "send event $eventType executed")
+                    }
                 }
-            }
         }
     }
 
     @JavascriptInterface
     fun engagementReceived() {
         Log.i(TAG, "engagement received on android")
-        val intent = Intent(context, WebviewActivity::class.java)
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        context.startActivity(intent)
+        Intent(context, WebviewActivity::class.java)
+            .apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            .let { context.startActivity(it) }
     }
 
     @JavascriptInterface
     fun sdkInitialized() {
         Log.i(TAG, "sdk initialised")
-        this.initStatus = InitStatus.Initialised
-        onInitializationFinishedHandler.handle()
+        initStatus = InitStatus.Initialised
+        onInitializationFinishedHandler?.handle()
     }
 
     @JavascriptInterface
     fun sdkInitializedError(error: String) {
         Log.i(TAG, "sdk initialise error: $error")
-        this.initStatus = InitStatus.InitialiseError(error)
-        onInitializationErrorHandler.handle(error)
+        initStatus = InitStatus.InitialiseError(error)
+        onInitializationErrorHandler?.handle(error)
+    }
+
+    @JavascriptInterface
+    fun onEventReceived(event: String, payload: String) {
+        Log.i(TAG, "onEventReceived: $event, payload : $payload")
+        if (onEventReceivedHandler?.handle(event, payload) != false) {
+            handleReceivedEvent(event, payload)
+        }
+    }
+
+    private fun configureWebView(): CereModule {
+        webview = WebView(context).apply {
+            layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+            settings.javaScriptEnabled = true
+            settings.domStorageEnabled = true
+            settings.databaseEnabled = true
+            WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
+            addJavascriptInterface(this@CereModule, "Android")
+        }
+        return this
+    }
+
+    private fun handleReceivedEvent(event: String, payload: String) {
+        sendEvent(event, payload)
     }
 }

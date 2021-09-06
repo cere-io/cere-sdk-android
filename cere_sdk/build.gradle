@@ -1,34 +1,47 @@
-apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
-apply plugin: 'com.github.dcendents.android-maven'
+plugins {
+    id 'com.android.library'
+    id 'kotlin-android'
+    id 'kotlin-android-extensions'
+    id 'com.github.dcendents.android-maven'
+}
 
-group='io.cere.cere_sdk'
+group = 'io.cere.cere_sdk'
 
 android {
-    compileSdkVersion 29
-    buildToolsVersion "29.0.3"
-
+    compileSdkVersion 30
+    buildToolsVersion "30.0.3"
 
     defaultConfig {
         minSdkVersion 19
-        targetSdkVersion 29
+        targetSdkVersion 30
         versionCode 3
         versionName project.versionName
-
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles 'consumer-rules.pro'
     }
 
     buildTypes {
-        def environment = '"prod"' //dev stage prod
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        all {
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
-        buildTypes.each {
-            it.buildConfigField 'String', 'environment', environment
-            it.resValue 'string', 'environment', environment
+        debug {
+            def environment = '"dev"'
+            minifyEnabled false
+            debuggable true
+            buildConfigField 'String', 'environment', environment
+            resValue 'string', 'environment', environment
+        }
+        deploy {
+            def environment = '"stage"'
+            minifyEnabled false
+            debuggable true
+            buildConfigField 'String', 'environment', environment
+            resValue 'string', 'environment', environment
+        }
+        release {
+            def environment = '"prod"' //dev stage prod
+            minifyEnabled true
+            debuggable false
+            buildConfigField 'String', 'environment', environment
+            resValue 'string', 'environment', environment
         }
     }
 
@@ -36,12 +49,6 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    api            "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'androidx.appcompat:appcompat:1.0.2'
-    implementation 'androidx.core:core-ktx:1.0.2'
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.0'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation 'androidx.appcompat:appcompat:1.3.1'
 }

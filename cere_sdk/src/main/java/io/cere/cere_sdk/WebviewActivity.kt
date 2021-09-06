@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.webkit.WebView
-import android.widget.RelativeLayout
 import androidx.appcompat.app.AppCompatActivity
 
 class WebviewActivity : AppCompatActivity() {
@@ -17,22 +16,23 @@ class WebviewActivity : AppCompatActivity() {
         attachBridgeView(CereModule.getInstance(this.application).webview)
     }
 
+    override fun onDestroy() {
+        detachBridgeView()
+        super.onDestroy()
+    }
+
+    override fun onBackPressed() {
+        webview.takeIf { it.canGoBack() }
+            ?.goBack()
+            ?: super.onBackPressed()
+    }
+
     private fun attachBridgeView(wv: WebView) {
-        val params = RelativeLayout.LayoutParams(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
-        params.width = MATCH_PARENT
-        params.height = MATCH_PARENT
         webview = wv
-        setContentView(wv, params)
+        setContentView(webview, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
     }
 
     private fun detachBridgeView() {
-        if (webview.parent != null) {
-            (webview.parent as ViewGroup).removeAllViews()
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        detachBridgeView()
+        (webview.parent as? ViewGroup)?.removeAllViews()
     }
 }
