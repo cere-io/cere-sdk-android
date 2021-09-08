@@ -12,6 +12,10 @@ import android.webkit.*
 import io.cere.cere_sdk.handlers.OnEventReceivedHandler
 import io.cere.cere_sdk.handlers.OnInitializationErrorHandler
 import io.cere.cere_sdk.handlers.OnInitializationFinishedHandler
+import io.cere.cere_sdk.handlers.PageLoadingListener
+import io.cere.cere_sdk.models.Event
+import io.cere.cere_sdk.models.InitStatus
+import io.cere.cere_sdk.models.PredefinedEventType
 
 const val baseUrl: String = "https://sdk.dev.cere.io/common/native.html"
 
@@ -79,6 +83,8 @@ class CereModule(private val context: Context) {
 
     var onEventReceivedHandler: OnEventReceivedHandler? = null
 
+    internal var pageLoadingListener: PageLoadingListener? = null
+
     lateinit var webview: WebView
 
     var initStatus: InitStatus = InitStatus.Uninitialised
@@ -87,8 +93,10 @@ class CereModule(private val context: Context) {
     private lateinit var appId: String
     private lateinit var integrationPartnerUserId: String
     private lateinit var token: String
-
     private val version: String = io.cere.cere_sdk.BuildConfig.VERSION_NAME
+
+    private val backEventsList = mutableListOf<Event>()
+    private var potentialBackEvent: Event? = null
 
     /**
      * Initializes and prepares the SDK for usage.
@@ -106,35 +114,6 @@ class CereModule(private val context: Context) {
         Log.i(TAG, "load url ${url}")
         initStatus = InitStatus.Initialising
         webview.loadUrl(url)
-    }
-
-    /**
-     * Send event to RXB.
-     * @param eventType: Type of event. For example `APP_LAUNCHED`.
-     * @param payload: Optional parameter which can be passed with event. It should contain serialised json payload associated with eventType.
-     */
-    fun sendEvent(eventType: String, payload: String = "") {
-        if (initStatus == InitStatus.Initialised) {
-            val script = """
-                (async function() {
-                    console.log('send event dialog');
-                    return cereSDK.sendEvent('${eventType}', ${payload}).
-                        then(() => {
-                            console.log(`event ${eventType} sent`);
-                        }).
-                        catch(err => {
-                            console.log(`${eventType} sending error` + err);
-                        });
-                })();""".trimIndent()
-
-            Handler(Looper.getMainLooper())
-                .post {
-                    Log.i(TAG, "evaluate send event javascript")
-                    webview.evaluateJavascript(script) {
-                        Log.i(TAG, "send event $eventType executed")
-                    }
-                }
-        }
     }
 
     @JavascriptInterface
@@ -169,6 +148,22 @@ class CereModule(private val context: Context) {
         }
     }
 
+    /**
+     * Send event to RXB.
+     *
+     * @param eventType [String] Type of event. For example `APP_LAUNCHED`.
+     * @param payload [String] Optional parameter which can be passed with event. It should contain serialised json payload associated with eventType.
+     */
+    fun sendEvent(eventType: String, payload: String = "") {
+        handleReceivedEvent(eventType, payload)
+    }
+
+    fun onBackPressed(): Boolean {
+        val backPressedSuccess = backEventsList.size > 1
+        sendEvent(PredefinedEventType.NAVIGATE_PREVIOUS_PAGE.name, "{}")
+        return backPressedSuccess
+    }
+
     private fun configureWebView(): CereModule {
         webview = WebView(context).apply {
             layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
@@ -182,6 +177,54 @@ class CereModule(private val context: Context) {
     }
 
     private fun handleReceivedEvent(event: String, payload: String) {
-        sendEvent(event, payload)
+        when (PredefinedEventType.byEventType(event)) {
+            PredefinedEventType.PAGE_LOADED -> {
+                potentialBackEvent?.let { backEventsList.add(it) }
+                potentialBackEvent = null
+                pageLoadingListener?.hideLoading()
+            }
+            PredefinedEventType.NAVIGATE_PREVIOUS_PAGE -> {
+                backEventsList.takeIf { it.size > 1 }
+                    ?.run {
+                        removeLastOrNull()
+                        lastOrNull()?.let { sendEvent(it) }
+                    }
+                    ?: backEventsList.clear()
+            }
+            else -> Event(event, payload).let {
+                potentialBackEvent = it
+                sendEvent(it)
+            }
+        }
+    }
+
+    /**
+     * Send event to RXB.
+     *
+     * @param event [Event]
+     */
+    private fun sendEvent(event: Event) {
+        event.takeIf { initStatus == InitStatus.Initialised }?.run {
+            val script = """
+                (async function() {
+                    console.log('send event dialog');
+                    return cereSDK.sendEvent('${eventType}', ${payload}).
+                        then(() => {
+                            console.log(`event ${eventType} sent`);
+                        }).
+                        catch(err => {
+                            console.log(`${eventType} sending error` + err);
+                        });
+                })();""".trimIndent()
+
+            Handler(Looper.getMainLooper())
+                .post {
+                    pageLoadingListener?.showLoading()
+                    Log.i(TAG, "evaluate send event javascript")
+                    webview.evaluateJavascript(script) {
+                        Log.i(TAG, "send event $eventType executed")
+                    }
+                }
+        }
     }
 }

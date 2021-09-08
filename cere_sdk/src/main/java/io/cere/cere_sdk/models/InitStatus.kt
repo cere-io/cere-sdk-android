@@ -1,4 +1,4 @@
-package io.cere.cere_sdk
+package io.cere.cere_sdk.models
 
 sealed class InitStatus {
     object Uninitialised : InitStatus()
