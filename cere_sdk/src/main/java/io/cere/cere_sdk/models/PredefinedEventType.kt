@@ -1,8 +1,9 @@
 package io.cere.cere_sdk.models
 
-internal enum class PredefinedEventType {
+enum class PredefinedEventType {
     PAGE_LOADED,
-    NAVIGATE_PREVIOUS_PAGE;
+    NAVIGATE_PREVIOUS_PAGE,
+    USER_LOGOUT;
 
     companion object {
         fun byEventType(eventType: String) = values().find { it.name == eventType }

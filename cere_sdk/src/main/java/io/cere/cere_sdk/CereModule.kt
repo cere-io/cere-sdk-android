@@ -143,24 +143,24 @@ class CereModule(private val context: Context) {
     @JavascriptInterface
     fun onEventReceived(event: String, payload: String) {
         Log.i(TAG, "onEventReceived: $event, payload : $payload")
-        if (onEventReceivedHandler?.handle(event, payload) != false) {
-            handleReceivedEvent(event, payload)
+        val receivedEvent = Event(event, payload)
+        if (onEventReceivedHandler?.handle(receivedEvent) != false) {
+            handleReceivedEvent(receivedEvent)
         }
     }
 
     /**
      * Send event to RXB.
      *
-     * @param eventType [String] Type of event. For example `APP_LAUNCHED`.
-     * @param payload [String] Optional parameter which can be passed with event. It should contain serialised json payload associated with eventType.
+     * @param event [Event]
      */
-    fun sendEvent(eventType: String, payload: String = "") {
-        handleReceivedEvent(eventType, payload)
+    fun sendEvent(event: Event) {
+        handleReceivedEvent(event)
     }
 
     fun onBackPressed(): Boolean {
         val backPressedSuccess = backEventsList.size > 1
-        sendEvent(PredefinedEventType.NAVIGATE_PREVIOUS_PAGE.name, "{}")
+        sendEvent(Event(PredefinedEventType.NAVIGATE_PREVIOUS_PAGE.name, "{}"))
         return backPressedSuccess
     }
 
@@ -176,8 +176,8 @@ class CereModule(private val context: Context) {
         return this
     }
 
-    private fun handleReceivedEvent(event: String, payload: String) {
-        when (PredefinedEventType.byEventType(event)) {
+    private fun handleReceivedEvent(event: Event) {
+        when (PredefinedEventType.byEventType(event.eventType)) {
             PredefinedEventType.PAGE_LOADED -> {
                 potentialBackEvent?.let { backEventsList.add(it) }
                 potentialBackEvent = null
@@ -187,15 +187,32 @@ class CereModule(private val context: Context) {
                 backEventsList.takeIf { it.size > 1 }
                     ?.run {
                         removeLastOrNull()
-                        lastOrNull()?.let { sendEvent(it) }
+                        lastOrNull()?.let { sendEventToRXB(it) }
                     }
                     ?: backEventsList.clear()
             }
-            else -> Event(event, payload).let {
-                potentialBackEvent = it
-                sendEvent(it)
+            PredefinedEventType.USER_LOGOUT -> logout()
+            else -> {
+                potentialBackEvent = event
+                sendEventToRXB(event)
             }
         }
+    }
+
+    private fun logout() {
+        webview.run {
+            clearHistory()
+            clearFormData()
+            clearSslPreferences()
+        }
+        onEventReceivedHandler = null
+        onInitializationErrorHandler = null
+        onInitializationFinishedHandler = null
+        backEventsList.clear()
+        potentialBackEvent = null
+        pageLoadingListener = null
+        initStatus = InitStatus.Uninitialised
+        instance = null
     }
 
     /**
@@ -203,7 +220,7 @@ class CereModule(private val context: Context) {
      *
      * @param event [Event]
      */
-    private fun sendEvent(event: Event) {
+    private fun sendEventToRXB(event: Event) {
         event.takeIf { initStatus == InitStatus.Initialised }?.run {
             val script = """
                 (async function() {

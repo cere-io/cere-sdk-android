@@ -1,6 +1,7 @@
 package io.cere.cere_sdk.handlers
 
 import io.cere.cere_sdk.CereModule
+import io.cere.cere_sdk.models.Event
 
 /**
  * Interface used after @see[CereModule.init].
@@ -8,10 +9,9 @@ import io.cere.cere_sdk.CereModule
  */
 interface OnEventReceivedHandler {
     /**
-     * @param event [String] Event or event type
-     * @param payload [String] serialized json
+     * @param event [Event]
      *
      * @return [Boolean] Flag which means need to use realization of sdk or no
      */
-    fun handle(event: String, payload: String): Boolean
+    fun handle(event: Event): Boolean
 }
