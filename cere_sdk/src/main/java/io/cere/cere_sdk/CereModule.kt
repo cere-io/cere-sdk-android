@@ -97,6 +97,7 @@ class CereModule(private val context: Context) {
 
     private val backEventsList = mutableListOf<Event>()
     private var potentialBackEvent: Event? = null
+    private var webViewStartedCallback: (() -> Unit)? = null
 
     /**
      * Initializes and prepares the SDK for usage.
@@ -124,6 +125,8 @@ class CereModule(private val context: Context) {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             .let { context.startActivity(it) }
+        webViewStartedCallback?.invoke()
+        webViewStartedCallback = null
     }
 
     @JavascriptInterface
@@ -147,6 +150,16 @@ class CereModule(private val context: Context) {
         if (onEventReceivedHandler?.handle(receivedEvent) != false) {
             handleReceivedEvent(receivedEvent)
         }
+    }
+
+    /**
+     * Send event to RXB for start working.
+     *
+     * @param event [Event]
+     */
+    fun sendEventForStart(event: Event, successFunc: () -> Unit) {
+        webViewStartedCallback = successFunc
+        sendEvent(event)
     }
 
     /**
