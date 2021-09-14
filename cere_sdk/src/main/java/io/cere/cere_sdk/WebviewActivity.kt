@@ -73,6 +73,7 @@ class WebviewActivity : AppCompatActivity(), PageLoadingListener {
             webview,
             ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
         )
+        webview.webChromeClient = CereWebChromeClient(this)
     }
 
     private fun detachBridgeView() {
