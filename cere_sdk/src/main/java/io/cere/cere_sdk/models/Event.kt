@@ -1,3 +1,3 @@
 package io.cere.cere_sdk.models
 
-data class Event(var eventType: String, var payload: String = "")
+data class Event(val eventType: String, var payload: String = "")
