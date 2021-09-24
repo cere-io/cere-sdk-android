@@ -194,7 +194,10 @@ class CereModule(private val context: Context) {
             PredefinedEventType.PAGE_LOADED -> {
                 potentialBackEvent?.let { backEventsList.add(it) }
                 potentialBackEvent = null
-                pageLoadingListener?.hideLoading()
+                Handler(Looper.getMainLooper())
+                    .post {
+                        pageLoadingListener?.hideLoading()
+                    }
             }
             PredefinedEventType.NAVIGATE_PREVIOUS_PAGE -> {
                 backEventsList.takeIf { it.size > 1 }

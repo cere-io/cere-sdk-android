@@ -46,8 +46,10 @@ class WebviewActivity : AppCompatActivity(), PageLoadingListener {
     }
 
     override fun onBackPressed() {
-        if (CereModule.getInstance(application).onBackPressed().not()) {
-            super.onBackPressed()
+        if (needBlockWebView.not()) {
+            if (CereModule.getInstance(application).onBackPressed().not()) {
+                super.onBackPressed()
+            }
         }
     }
 
