@@ -13,28 +13,17 @@ import io.cere.cere_sdk.handlers.OnEventReceivedHandler
 import io.cere.cere_sdk.handlers.OnInitializationErrorHandler
 import io.cere.cere_sdk.handlers.OnInitializationFinishedHandler
 import io.cere.cere_sdk.handlers.PageLoadingListener
+import io.cere.cere_sdk.models.AuthType
 import io.cere.cere_sdk.models.Event
 import io.cere.cere_sdk.models.InitStatus
 import io.cere.cere_sdk.models.PredefinedEventType
-
-const val baseUrl: String = "https://sdk.dev.cere.io/common/native.html"
 
 /**
  * This is the main class which incapsulates all logic (opening/closing activity etc) and
  * provides high-level methods to manipulate with.
  **
  * <p>All you need to start working with the class is to instantiate <tt>CereModule</tt> once and
- * initialize it with 2 params. Example:
- * </p>
- *
- * <p>
- *     <pre>
- *         {@code
- *              CereModule cereModule = CereModule.getInstance(context);
- *              cereModule.init("Your appId", "Your integrationPartnerUserId");
- *         }
- *     </pre>
- * </p>
+ * initialize it with call @see[init] method.
  *
  * <p>That's enough for start loading {@code CereModule}, but note that {@code CereModule} still
  * remains hidden. Also, first load of {@code CereModule} takes a some time which depends on
@@ -61,6 +50,7 @@ const val baseUrl: String = "https://sdk.dev.cere.io/common/native.html"
 class CereModule(private val context: Context) {
 
     companion object {
+
         const val TAG = "CereModule"
 
         @Volatile
@@ -90,31 +80,80 @@ class CereModule(private val context: Context) {
     var initStatus: InitStatus = InitStatus.Uninitialised
         private set
 
-    private lateinit var appId: String
-    private lateinit var integrationPartnerUserId: String
-    private lateinit var token: String
-    private val version: String = io.cere.cere_sdk.BuildConfig.VERSION_NAME
-
     private val backEventsList = mutableListOf<Event>()
     private var potentialBackEvent: Event? = null
     private var webViewStartedCallback: (() -> Unit)? = null
 
     /**
      * Initializes and prepares the SDK for usage.
-     * @param appId: identifier of the application from RXB.
-     * @param integrationPartnerUserId: The user’s id in the system.
-     * @param token: The user’s onboarding access token in the system.
+     *
+     * @param appId [String] identifier of the application from RXB.
+     * @param integrationPartnerUserId [String] The user’s id in the system.
+     * @param authType [AuthType] Type of auth method
+     * @param accessToken [String] The user’s onboarding access token in the system. Must to present for all [AuthType] except [AuthType.EMAIL].
+     * @param email [String] The user’s email. Must to present for [AuthType.EMAIL].
+     * @param password [String] The user’s password. Must to present for [AuthType.EMAIL].
      */
-    fun init(appId: String, integrationPartnerUserId: String, token: String = "") {
-        val env = BuildConfig.environment
-        this.appId = appId
-        this.integrationPartnerUserId = integrationPartnerUserId
-        this.token = token
-        val url =
-            "${baseUrl}?appId=${appId}&integrationPartnerUserId=${integrationPartnerUserId}&platform=android&version=${version}&env=${env}&token=${token}"
-        Log.i(TAG, "load url ${url}")
-        initStatus = InitStatus.Initialising
-        webview.loadUrl(url)
+    @Throws(IllegalArgumentException::class)
+    fun init(
+        appId: String,
+        integrationPartnerUserId: String,
+        authType: AuthType,
+        accessToken: String?,
+        email: String?,
+        password: String?
+    ) {
+        StringBuilder(BuildConfig.BASE_URL)
+            .apply {
+                append("?appId=")
+                append(appId)
+                append("&integrationPartnerUserId=")
+                append(integrationPartnerUserId)
+                append("&platform=android")
+                append("&version=")
+                append(BuildConfig.VERSION_NAME)
+                append("&env=")
+                append(BuildConfig.ENVIRONMENT)
+                append("&type=")
+                append(authType.name)
+                when (authType) {
+                    AuthType.EMAIL -> {
+                        validateRequiredField(email, "email", authType) {
+                            append("&email=")
+                            append(it)
+                        }
+                        validateRequiredField(password, "password", authType) {
+                            append("&password=")
+                            append(it)
+                        }
+                    }
+                    else -> {
+                        validateRequiredField(accessToken, "accessToken", authType) {
+                            append("&accessToken=")
+                            append(it)
+                        }
+                    }
+                }
+            }
+            .toString()
+            .let { url ->
+                Log.i(TAG, "load url ${url}")
+                initStatus = InitStatus.Initialising
+                webview.loadUrl(url)
+            }
+    }
+
+    @Throws(IllegalArgumentException::class)
+    private fun validateRequiredField(
+        fieldValue: String?,
+        fieldName: String,
+        authType: AuthType,
+        successFunc: (field: String) -> Unit
+    ) {
+        fieldValue
+            ?.takeIf { it.isNotBlank() }
+            ?.let { successFunc(it) }
+            ?: throw IllegalArgumentException("$fieldName is null or blank. $fieldName is required for $authType")
     }
 
     @JavascriptInterface
