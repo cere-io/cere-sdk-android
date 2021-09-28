@@ -27,22 +27,25 @@ android {
             def environment = '"dev"'
             minifyEnabled false
             debuggable true
-            buildConfigField 'String', 'environment', environment
+            buildConfigField 'String', 'ENVIRONMENT', environment
             resValue 'string', 'environment', environment
+            buildConfigField 'String', 'BASE_URL', '"https://sdk.dev.cere.io/common/native.html"'
         }
         deploy {
             def environment = '"stage"'
             minifyEnabled false
             debuggable true
-            buildConfigField 'String', 'environment', environment
+            buildConfigField 'String', 'ENVIRONMENT', environment
             resValue 'string', 'environment', environment
+            buildConfigField 'String', 'BASE_URL', '"https://sdk.dev.cere.io/common/native.html"'
         }
         release {
             def environment = '"prod"' //dev stage prod
             minifyEnabled true
             debuggable false
-            buildConfigField 'String', 'environment', environment
+            buildConfigField 'String', 'ENVIRONMENT', environment
             resValue 'string', 'environment', environment
+            buildConfigField 'String', 'BASE_URL', '"https://sdk.dev.cere.io/common/native.html"'
         }
     }
 

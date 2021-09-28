@@ -50,7 +50,6 @@ import io.cere.cere_sdk.models.PredefinedEventType
 class CereModule(private val context: Context) {
 
     companion object {
-        private const val baseUrl: String = "https://sdk.dev.cere.io/common/native.html"
 
         const val TAG = "CereModule"
 
@@ -104,7 +103,7 @@ class CereModule(private val context: Context) {
         email: String?,
         password: String?
     ) {
-        StringBuilder(baseUrl)
+        StringBuilder(BuildConfig.BASE_URL)
             .apply {
                 append("?appId=")
                 append(appId)
@@ -114,7 +113,7 @@ class CereModule(private val context: Context) {
                 append("&version=")
                 append(BuildConfig.VERSION_NAME)
                 append("&env=")
-                append(BuildConfig.environment)
+                append(BuildConfig.ENVIRONMENT)
                 append("&type=")
                 append(authType.name)
                 when (authType) {
