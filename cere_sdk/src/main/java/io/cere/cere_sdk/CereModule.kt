@@ -103,6 +103,8 @@ class CereModule(private val context: Context) {
         email: String?,
         password: String?
     ) {
+        backEventsList.clear()
+        potentialBackEvent = null
         StringBuilder(BuildConfig.BASE_URL)
             .apply {
                 append("?appId=")
@@ -246,7 +248,9 @@ class CereModule(private val context: Context) {
                     }
                     ?: backEventsList.clear()
             }
-            PredefinedEventType.USER_LOGOUT -> logout()
+            PredefinedEventType.USER_LOGOUT ->
+                Handler(Looper.getMainLooper())
+                    .post { logout() }
             else -> {
                 potentialBackEvent = event
                 sendEventToRXB(event)
