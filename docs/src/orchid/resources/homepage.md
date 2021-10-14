@@ -53,9 +53,9 @@ public class CustomApplication extends Application {
             this.cereModule.setOnInitializationErrorHandler((String error) -> {
                     Log.e(TAG, error);
             });
-            this.cereModule.init("242", "userID", AuthType.FIREBASE, "some access token", null, null);
+            this.cereModule.init(InitConfig("environment", "base_url", "242", "userID", AuthType.FIREBASE, "some access token", null, null));
 //            or
-//            this.cereModule.init("242", "userID", AuthType.EMAIL, null, "some user email", "some user possword");
+//            this.cereModule.init(InitConfig("environment", "base_url", "242", "userID", AuthType.EMAIL, null, "some user email", "some user possword"));
         }
     }
 }

@@ -1,4 +1,4 @@
-package io.cere.cere_sdk.models
+package io.cere.cere_sdk.models.init
 
 enum class AuthType {
     EMAIL,

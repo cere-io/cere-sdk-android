@@ -13,10 +13,11 @@ import io.cere.cere_sdk.handlers.OnEventReceivedHandler
 import io.cere.cere_sdk.handlers.OnInitializationErrorHandler
 import io.cere.cere_sdk.handlers.OnInitializationFinishedHandler
 import io.cere.cere_sdk.handlers.PageLoadingListener
-import io.cere.cere_sdk.models.AuthType
 import io.cere.cere_sdk.models.Event
-import io.cere.cere_sdk.models.InitStatus
 import io.cere.cere_sdk.models.PredefinedEventType
+import io.cere.cere_sdk.models.init.AuthType
+import io.cere.cere_sdk.models.init.InitConfig
+import io.cere.cere_sdk.models.init.InitStatus
 
 /**
  * This is the main class which incapsulates all logic (opening/closing activity etc) and
@@ -86,51 +87,49 @@ class CereModule(private val context: Context) {
 
     /**
      * Initializes and prepares the SDK for usage.
-     *
-     * @param appId [String] identifier of the application from RXB.
-     * @param integrationPartnerUserId [String] The user’s id in the system.
-     * @param authType [AuthType] Type of auth method
-     * @param accessToken [String] The user’s onboarding access token in the system. Must to present for all [AuthType] except [AuthType.EMAIL].
-     * @param email [String] The user’s email. Must to present for [AuthType.EMAIL].
-     * @param password [String] The user’s password. Must to present for [AuthType.EMAIL].
      */
     @Throws(IllegalArgumentException::class)
-    fun init(
-        appId: String,
-        integrationPartnerUserId: String,
-        authType: AuthType,
-        accessToken: String?,
-        email: String?,
-        password: String?
-    ) {
+    fun init(initConfig: InitConfig) {
         backEventsList.clear()
         potentialBackEvent = null
-        StringBuilder(BuildConfig.BASE_URL)
+        StringBuilder(initConfig.baseUrl)
             .apply {
                 append("?appId=")
-                append(appId)
+                append(initConfig.appId)
                 append("&integrationPartnerUserId=")
-                append(integrationPartnerUserId)
+                append(initConfig.integrationPartnerUserId)
                 append("&platform=android")
                 append("&version=")
                 append(BuildConfig.VERSION_NAME)
                 append("&env=")
-                append(BuildConfig.ENVIRONMENT)
+                append(initConfig.environment)
                 append("&type=")
-                append(authType.name)
-                when (authType) {
+                append(initConfig.authType.name)
+                when (initConfig.authType) {
                     AuthType.EMAIL -> {
-                        validateRequiredField(email, "email", authType) {
+                        validateRequiredField(
+                            initConfig.email,
+                            "email",
+                            initConfig.authType
+                        ) {
                             append("&email=")
                             append(it)
                         }
-                        validateRequiredField(password, "password", authType) {
+                        validateRequiredField(
+                            initConfig.password,
+                            "password",
+                            initConfig.authType
+                        ) {
                             append("&password=")
                             append(it)
                         }
                     }
                     else -> {
-                        validateRequiredField(accessToken, "accessToken", authType) {
+                        validateRequiredField(
+                            initConfig.accessToken,
+                            "accessToken",
+                            initConfig.authType
+                        ) {
                             append("&accessToken=")
                             append(it)
                         }
@@ -139,7 +138,7 @@ class CereModule(private val context: Context) {
             }
             .toString()
             .let { url ->
-                Log.i(TAG, "load url ${url}")
+                Log.i(TAG, "load url $url")
                 initStatus = InitStatus.Initialising
                 webview.loadUrl(url)
             }
