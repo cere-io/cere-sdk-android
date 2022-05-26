@@ -125,7 +125,7 @@ class CereModule(private val context: Context) {
      * @param integrationPartnerUserId: The user’s id in the system.
      * @param token: The user’s onboarding access token in the system.
      */
-    fun init(appId: String, integrationPartnerUserId: String?, token: String = "", externalUserId: String = "", authMethodType: String = "") {
+    fun init(appId: String, integrationPartnerUserId: String, token: String = "", externalUserId: String = "", authMethodType: String = "") {
         val env = BuildConfig.environment
         this.appId = appId
         this.externalUserId = externalUserId
