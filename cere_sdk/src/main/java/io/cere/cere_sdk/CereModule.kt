@@ -128,7 +128,7 @@ class CereModule(private val context: Context) {
         this.appId = appId
         this.integrationPartnerUserId = integrationPartnerUserId
         this.token = token
-        val url = "${baseUrl}?appId=${appId}&integrationPartnerUserId=${integrationPartnerUserId}&platform=android&version=${version}&env=${env}&token=${token}"
+        val url = "${baseUrl}?appId=${appId}&integrationPartnerUserId=${integrationPartnerUserId}&platform=android&version=${version}&env=${env}&token=${token}&externalUserId=${externalUserId}"
         Log.i(TAG, "load url ${url}")
         this.initStatus = InitStatus.Initialising
         this.webview.loadUrl(url)
