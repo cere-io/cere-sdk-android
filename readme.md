@@ -1,6 +1,8 @@
 ## Release notes
 ### vNext
 *
+### v1.2.2
+* Trusted event for 3rd party send added
 ### v1.2.1
 * Extended URL parameters `native.html` URL
 ### v1.2.0

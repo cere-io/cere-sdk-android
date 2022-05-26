@@ -180,6 +180,36 @@ class CereModule(private val context: Context) {
         }
     }
 
+    /**
+     * Send event to RXB.
+     * @param eventType: Type of event for 3rd_party. For example `APP_LAUNCHED`.
+     */
+    fun sendEventTrustedEvent(eventType: String) {
+        if (this.initStatus == InitStatus.Initialised) {
+            val script = """
+                (async function() {
+                let timestamp = Number(new Date());
+                let signature = await sdk.signMessage(timestamp);
+                let payload = {
+                    timestamp,
+                    signature
+                };
+                console.log(JSON.stringify(payload))
+                sdk.sendEvent('${eventType}', payload);
+            })();""".trimIndent()
+
+            val handler = Handler(Looper.getMainLooper())
+
+            handler.post{
+                Log.i(TAG, "evaluate send event javascript")
+                webview.evaluateJavascript(script)
+                {
+                    Log.i(TAG, "send event $eventType executed")
+                }
+            }
+        }
+    }
+
     @JavascriptInterface
     fun engagementReceived() {
         Log.i(TAG, "engagement received on android")
