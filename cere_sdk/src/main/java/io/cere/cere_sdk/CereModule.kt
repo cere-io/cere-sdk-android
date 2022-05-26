@@ -125,7 +125,7 @@ class CereModule(private val context: Context) {
      * @param integrationPartnerUserId: The user’s id in the system.
      * @param token: The user’s onboarding access token in the system.
      */
-    fun init(appId: String, integrationPartnerUserId: String, token: String = "", externalUserId: String = "", authMethodType: String = "") {
+    fun init(appId: String, integrationPartnerUserId: String?, token: String = "", externalUserId: String = "", authMethodType: String = "") {
         val env = BuildConfig.environment
         this.appId = appId
         this.externalUserId = externalUserId
@@ -189,13 +189,13 @@ class CereModule(private val context: Context) {
             val script = """
                 (async function() {
                 let timestamp = Number(new Date());
-                let signature = await sdk.signMessage(timestamp);
+                let signature = await cereSDK.signMessage(timestamp);
                 let payload = {
                     timestamp,
                     signature
                 };
                 console.log(JSON.stringify(payload))
-                sdk.sendEvent('${eventType}', payload);
+                cereSDK.sendEvent('${eventType}', payload);
             })();""".trimIndent()
 
             val handler = Handler(Looper.getMainLooper())
