@@ -103,6 +103,8 @@ class CereModule(private val context: Context) {
     lateinit var webview: WebView
 
     private lateinit var appId: String
+    private lateinit var authMethodType: String
+    private lateinit var externalUserId: String
     private lateinit var integrationPartnerUserId: String
     private lateinit var token: String
 
@@ -123,12 +125,13 @@ class CereModule(private val context: Context) {
      * @param integrationPartnerUserId: The user’s id in the system.
      * @param token: The user’s onboarding access token in the system.
      */
-    fun init(appId: String, integrationPartnerUserId: String, token: String = "") {
+    fun init(appId: String, integrationPartnerUserId: String, token: String = "", externalUserId: String = "", authMethodType: String = "") {
         val env = BuildConfig.environment
         this.appId = appId
+        this.externalUserId = externalUserId
         this.integrationPartnerUserId = integrationPartnerUserId
         this.token = token
-        val url = "${baseUrl}?appId=${appId}&integrationPartnerUserId=${integrationPartnerUserId}&platform=android&version=${version}&env=${env}&token=${token}"
+        val url = "${baseUrl}?appId=${appId}&integrationPartnerUserId=${integrationPartnerUserId}&platform=android&version=${version}&env=${env}&token=${token}&externalUserId=${externalUserId}&authMethodType=${authMethodType}"
         Log.i(TAG, "load url ${url}")
         this.initStatus = InitStatus.Initialising
         this.webview.loadUrl(url)
