@@ -1,6 +1,8 @@
 ## Release notes
 ### vNext
 *
+### v1.2.1
+* Extended URL parameters `native.html` URL
 ### v1.2.0
 * Updated `native.html` URL
 ### v1.1.0
