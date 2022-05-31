@@ -184,7 +184,7 @@ class CereModule(private val context: Context) {
      * Send event to RXB.
      * @param eventType: Type of event for 3rd_party. For example `APP_LAUNCHED`.
      */
-    fun sendEventTrustedEvent(eventType: String) {
+    fun sendTrustedEvent(eventType: String) {
         if (this.initStatus == InitStatus.Initialised) {
             val script = """
                 (async function() {
