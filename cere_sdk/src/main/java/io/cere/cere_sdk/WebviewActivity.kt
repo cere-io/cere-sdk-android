@@ -1,20 +1,25 @@
 package io.cere.cere_sdk
 
+import android.os.Build
 import android.os.Bundle
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.webkit.WebView
 import android.widget.RelativeLayout
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 
 class WebviewActivity : AppCompatActivity() {
 
     private lateinit var webview: WebView
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
+        val instance = CereModule.getInstance(this.application)
+        instance.theme?.let { setTheme(it) }
         super.onCreate(savedInstanceState)
         this.setFinishOnTouchOutside(true)
-        val instance = CereModule.getInstance(this.application)
+
         attachBridgeView(instance.webview, instance.layout)
     }
 
