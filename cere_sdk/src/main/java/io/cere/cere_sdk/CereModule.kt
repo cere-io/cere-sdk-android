@@ -1,13 +1,18 @@
 package io.cere.cere_sdk
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.ViewGroup
+import android.view.WindowManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
+import android.widget.RelativeLayout
+import androidx.core.content.ContextCompat.getSystemService
 
 
 const val baseUrl: String = "https://sdk.dev.cere.io/common/native.html"
@@ -71,14 +76,19 @@ class CereModule(private val context: Context) {
 
     companion object {
         const val TAG = "CereModule"
+
         @Volatile
         private var instance: CereModule? = null
-        @JvmStatic private fun make(context: Context): CereModule {
+
+        @JvmStatic
+        private fun make(context: Context): CereModule {
             val module = CereModule(context).configureWebView()
             instance = module
             return module
         }
-        @JvmStatic fun getInstance(application: Application): CereModule {
+
+        @JvmStatic
+        fun getInstance(application: Application): CereModule {
             val inst = this.instance
             if (inst != null) {
                 return inst
@@ -88,19 +98,22 @@ class CereModule(private val context: Context) {
         }
     }
 
-    var onInitializationFinishedHandler: OnInitializationFinishedHandler = object: OnInitializationFinishedHandler {
-        override fun handle() {
+    var onInitializationFinishedHandler: OnInitializationFinishedHandler =
+        object : OnInitializationFinishedHandler {
+            override fun handle() {
 
+            }
         }
-    }
 
-    var onInitializationErrorHandler: OnInitializationErrorHandler = object: OnInitializationErrorHandler {
-        override fun handle(error: String) {
+    var onInitializationErrorHandler: OnInitializationErrorHandler =
+        object : OnInitializationErrorHandler {
+            override fun handle(error: String) {
 
+            }
         }
-    }
 
     lateinit var webview: WebView
+    var layout: ViewGroup.LayoutParams? = null
 
     private lateinit var appId: String
     private lateinit var authMethodType: String
@@ -125,29 +138,61 @@ class CereModule(private val context: Context) {
      * @param integrationPartnerUserId: The user’s id in the system.
      * @param token: The user’s onboarding access token in the system.
      */
-    fun init(appId: String, integrationPartnerUserId: String, token: String = "", externalUserId: String = "", authMethodType: String = "") {
+    fun init(
+        appId: String,
+        integrationPartnerUserId: String,
+        token: String = "",
+        externalUserId: String = "",
+        authMethodType: String = ""
+    ) {
         val env = BuildConfig.environment
         this.appId = appId
         this.externalUserId = externalUserId
         this.integrationPartnerUserId = integrationPartnerUserId
         this.token = token
-        val url = "${baseUrl}?appId=${appId}&integrationPartnerUserId=${integrationPartnerUserId}&platform=android&version=${version}&env=${env}&token=${token}&externalUserId=${externalUserId}&authMethodType=${authMethodType}"
+        val url =
+            "${baseUrl}?appId=${appId}&integrationPartnerUserId=${integrationPartnerUserId}&platform=android&version=${version}&env=${env}&token=${token}&externalUserId=${externalUserId}&authMethodType=${authMethodType}"
         Log.i(TAG, "load url ${url}")
         this.initStatus = InitStatus.Initialising
         this.webview.loadUrl(url)
     }
 
+    @SuppressLint("SetJavaScriptEnabled")
     private fun configureWebView(): CereModule {
         val webview = WebView(context)
         webview.settings.javaScriptEnabled = true
         webview.settings.domStorageEnabled = true
         webview.settings.databaseEnabled = true
-        //WebView.setWebContentsDebuggingEnabled(true)
-
         webview.addJavascriptInterface(this, "Android")
         this.webview = webview
         return this
     }
+
+//
+//    /**
+//     * Sets the padding. The view may add on the space required to display the scrollbars,
+//     * depending on the style and visibility of the scrollbars. So the values returned from getPaddingLeft, getPaddingTop, getPaddingRight and getPaddingBottom may be different from the values set in this call.
+//     * Params:
+//     * left – the left padding in pixels
+//     * top – the top padding in pixels
+//     * right – the right padding in pixels
+//     * bottom – the bottom padding in pixels
+//     */
+//    public fun setDisplay(left: Int, top: Int, right: Int, bottom: Int) {
+//        this.webview?.setPadding(left, top, right, bottom)
+//    }
+//
+//    public fun setInitialScale(scaleInPercent: Int) {
+//        this.webview?.setInitialScale(scaleInPercent)
+//    }
+//
+//    private fun getScale(): Int {
+//        val display = (getSystemService(Context.WINDOW_SERVICE) as WindowManager?)!!.defaultDisplay
+//        val width = display.width
+//        var `val`: Double = width / PIC_WIDTH
+//        `val` = `val` * 100.0
+//        return `val`.toInt()
+//    }
 
     /**
      * Send event to RXB.
@@ -170,7 +215,7 @@ class CereModule(private val context: Context) {
 
             val handler = Handler(Looper.getMainLooper())
 
-            handler.post{
+            handler.post {
                 Log.i(TAG, "evaluate send event javascript")
                 webview.evaluateJavascript(script)
                 {
@@ -200,7 +245,7 @@ class CereModule(private val context: Context) {
 
             val handler = Handler(Looper.getMainLooper())
 
-            handler.post{
+            handler.post {
                 Log.i(TAG, "evaluate send event javascript")
                 webview.evaluateJavascript(script)
                 {

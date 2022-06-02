@@ -14,15 +14,21 @@ class WebviewActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         this.setFinishOnTouchOutside(true)
-        attachBridgeView(CereModule.getInstance(this.application).webview)
+        val instance = CereModule.getInstance(this.application)
+        attachBridgeView(instance.webview, instance.layout)
     }
 
-    private fun attachBridgeView(wv: WebView) {
-        val params = RelativeLayout.LayoutParams(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
+    private fun attachBridgeView(wv: WebView, layoutParams: ViewGroup.LayoutParams?) {
+        webview = wv
+        setContentView(wv, layoutParams ?: createParams())
+    }
+
+    private fun createParams(): ViewGroup.LayoutParams {
+        val params =
+            RelativeLayout.LayoutParams(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
         params.width = MATCH_PARENT
         params.height = MATCH_PARENT
-        webview = wv
-        setContentView(wv, params)
+        return params;
     }
 
     private fun detachBridgeView() {
