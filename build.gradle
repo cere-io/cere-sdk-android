@@ -28,4 +28,4 @@ task clean(type: Delete) {
     delete rootProject.buildDir
 }
 
-project.ext.set("versionName", "1.2.6")
+project.ext.set("versionName", "1.2.7")
