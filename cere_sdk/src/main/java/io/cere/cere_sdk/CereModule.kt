@@ -112,7 +112,7 @@ class CereModule(private val context: Context) {
 
     lateinit var webview: WebView
     var layout: ViewGroup.LayoutParams? = null
-    var theme: Resources.Theme? = null
+    var theme: Int? = null
 
     private lateinit var appId: String
     private lateinit var authMethodType: String

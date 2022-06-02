@@ -16,7 +16,7 @@ class WebviewActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         val instance = CereModule.getInstance(this.application)
-        instance.theme?.let { theme = it }
+        instance.theme?.let { setTheme(it) }
         super.onCreate(savedInstanceState)
         this.setFinishOnTouchOutside(true)
 
