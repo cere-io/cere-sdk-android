@@ -142,9 +142,9 @@ class CereModule(private val context: Context) {
         integrationPartnerUserId: String,
         token: String = "",
         externalUserId: String = "",
-        authMethodType: String = ""
+        authMethodType: String = "",
+        env: String = "dev"
     ) {
-        val env = BuildConfig.environment
         this.appId = appId
         this.externalUserId = externalUserId
         this.integrationPartnerUserId = integrationPartnerUserId
