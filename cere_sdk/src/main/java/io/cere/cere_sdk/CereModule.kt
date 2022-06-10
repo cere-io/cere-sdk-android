@@ -1,10 +1,10 @@
 package io.cere.cere_sdk
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.content.Intent
-import android.content.res.Resources
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -96,6 +96,8 @@ class CereModule(private val context: Context) {
         }
     }
 
+    private var jsEventListenerCollection: MutableSet<JSEventListener> = HashSet()
+
     var onInitializationFinishedHandler: OnInitializationFinishedHandler =
         object : OnInitializationFinishedHandler {
             override fun handle() {
@@ -113,6 +115,7 @@ class CereModule(private val context: Context) {
     lateinit var webview: WebView
     var layout: ViewGroup.LayoutParams? = null
     var theme: Int? = null
+    var activity: Activity? = null
 
     private lateinit var appId: String
     private lateinit var authMethodType: String
@@ -254,6 +257,17 @@ class CereModule(private val context: Context) {
         }
     }
 
+    fun attachEventListener(jsEventListener: JSEventListener) =
+        jsEventListenerCollection.add(jsEventListener)
+
+    fun detachEventListener(jsEventListener: JSEventListener) =
+        jsEventListenerCollection.remove(jsEventListener)
+
+    private fun notifyListeners(eventName: String, activity: Activity?) =
+        activity?.let { act ->
+            jsEventListenerCollection.forEach { it.onJSEventReceived(eventName, act) }
+        }
+
     @JavascriptInterface
     fun engagementReceived() {
         Log.i(TAG, "engagement received on android")
@@ -274,5 +288,11 @@ class CereModule(private val context: Context) {
         Log.i(TAG, "sdk initialise error: $error")
         this.initStatus = InitStatus.InitialiseError(error)
         onInitializationErrorHandler.handle(error)
+    }
+
+    @JavascriptInterface
+    fun onJSAction(eventName: String) {
+        Log.i(TAG, "Event received $eventName")
+        notifyListeners(eventName, activity)
     }
 }

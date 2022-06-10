@@ -4,6 +4,7 @@ import android.os.Build
 import android.os.Bundle
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.widget.RelativeLayout
 import androidx.annotation.RequiresApi
@@ -15,12 +16,13 @@ class WebviewActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
-        val instance = CereModule.getInstance(this.application)
+        val instance = cereModule()
         instance.theme?.let { setTheme(it) }
         super.onCreate(savedInstanceState)
         this.setFinishOnTouchOutside(true)
 
         attachBridgeView(instance.webview, instance.layout)
+        instance.activity = this
     }
 
     private fun attachBridgeView(wv: WebView, layoutParams: ViewGroup.LayoutParams?) {
@@ -45,5 +47,8 @@ class WebviewActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         detachBridgeView()
+        cereModule().activity = null
     }
+
+    private fun cereModule() = CereModule.getInstance(this.application)
 }
