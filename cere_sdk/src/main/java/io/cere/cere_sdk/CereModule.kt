@@ -5,12 +5,15 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
+import androidx.annotation.RequiresApi
+import java.util.function.Consumer
 
 
 const val baseUrl: String = "https://sdk.dev.cere.io/common/native.html"
@@ -228,6 +231,23 @@ class CereModule(private val context: Context) {
     }
 
     /**
+     * Has nfts call.
+     */
+    @RequiresApi(Build.VERSION_CODES.N)
+    fun hasNfts(consumer: Consumer<String>) {
+        if (this.initStatus == InitStatus.Initialised) {
+            val handler = Handler(Looper.getMainLooper())
+            handler.post {
+                Log.i(TAG, "hasNfts event sent")
+                webview.evaluateJavascript("javascript:cereSDK.hasNfts();") {
+                    consumer.accept(it)
+                    Log.i(TAG, "has token sent")
+                };
+            }
+        }
+    }
+
+    /**
      * Send event to RXB.
      * @param eventType: Type of event for 3rd_party. For example `APP_LAUNCHED`.
      */
@@ -295,4 +315,5 @@ class CereModule(private val context: Context) {
         Log.i(TAG, "Event received $eventName")
         notifyListeners(eventName, activity)
     }
+
 }
