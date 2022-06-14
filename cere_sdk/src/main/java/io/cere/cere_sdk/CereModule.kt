@@ -248,9 +248,11 @@ class CereModule(private val context: Context) {
         if (this.initStatus == InitStatus.Initialised) {
 
             val script = """
-                (function() {
-                    Android.onJSActionResult(await cereSDK.hasNfts());
-                  })();""".trimIndent()
+                (async function() 
+                {
+                    let res = await cereSDK.hasNfts();
+                    Android.onJSActionResult(res);
+                })()""".trimIndent()
 
             val handler = Handler(Looper.getMainLooper())
             handler.post {
