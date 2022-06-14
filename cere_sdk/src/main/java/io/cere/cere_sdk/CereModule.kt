@@ -11,8 +11,11 @@ import android.os.Looper
 import android.util.Log
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
+import android.webkit.ValueCallback
 import android.webkit.WebView
 import androidx.annotation.RequiresApi
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Consumer
 
 
@@ -233,13 +236,42 @@ class CereModule(private val context: Context) {
     /**
      * Has nfts call.
      */
+//    ASYNC countdown latch
+//    @RequiresApi(Build.VERSION_CODES.N)
+//    fun hasNfts(consumer: Consumer<String>): String {
+//        if (this.initStatus == InitStatus.Initialised) {
+//
+//            val script = """
+//                (function() {
+//                    return await cereSDK.hasNfts();
+//            })();""".trimIndent()
+//
+//            val handler = Handler(Looper.getMainLooper())
+//
+//            val latch = CountDownLatch(1)
+//            val result: AtomicReference<String> = AtomicReference()
+//            handler.post(Runnable {
+//                Log.i(TAG, "hasNfts event sent")
+//                webview.evaluateJavascript(script, ValueCallback<String?> {
+//                    Log.i(TAG, "has token received with $it")
+//                    result.set(it);
+//                    latch.countDown()
+//                })
+//            })
+//
+//            latch.await()
+//            return result.get()
+//        }
+//        return "NOT_INITIALISED"
+//    }
+
     @RequiresApi(Build.VERSION_CODES.N)
     fun hasNfts(consumer: Consumer<String>) {
         if (this.initStatus == InitStatus.Initialised) {
 
             val script = """
-                (async function() {
-                    await cereSDK.hasNfts();
+                (function() {
+                    return await cereSDK.hasNfts();
             })();""".trimIndent()
 
             val handler = Handler(Looper.getMainLooper())
