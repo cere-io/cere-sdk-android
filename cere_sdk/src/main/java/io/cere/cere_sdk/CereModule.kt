@@ -228,6 +228,21 @@ class CereModule(private val context: Context) {
         }
     }
 
+    fun callJavascriptFunction(function: String) {
+        if (this.initStatus == InitStatus.Initialised) {
+
+            val script = function.trimIndent()
+
+            val handler = Handler(Looper.getMainLooper())
+            handler.post {
+                Log.i(TAG, "js event sent")
+                webview.evaluateJavascript(script) {
+                    Log.i(TAG, "js event executed")
+                }
+            }
+        }
+    }
+
 
     fun sendHasNfts() {
         if (this.initStatus == InitStatus.Initialised) {
