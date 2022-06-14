@@ -11,6 +11,7 @@ import android.util.Log
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
+import java.lang.RuntimeException
 
 
 const val baseUrl: String = "https://sdk.dev.cere.io/common/native.html"
@@ -124,7 +125,7 @@ class CereModule(private val context: Context) {
     private lateinit var token: String
 
     private var initStatus: InitStatus = InitStatus.Uninitialised
-    private var hasNfts: String = "NO_RESPONSE"
+    private lateinit var eventListener: JSEventResponseListener
 
     private val version: String = io.cere.cere_sdk.BuildConfig.VERSION_NAME
 
@@ -228,25 +229,26 @@ class CereModule(private val context: Context) {
         }
     }
 
-    fun callJavascriptFunction(function: String) {
+//    DEBUG PURPOSES ONLY
+//    fun callJavascriptFunction(function: String) {
+//        if (this.initStatus == InitStatus.Initialised) {
+//
+//            val script = function.trimIndent()
+//
+//            val handler = Handler(Looper.getMainLooper())
+//            handler.post {
+//                Log.i(TAG, "js event sent")
+//                webview.evaluateJavascript(script) {
+//                    Log.i(TAG, "js event executed")
+//                }
+//            }
+//        }
+//    }
+
+
+    fun hasNfts(eventListener: JSEventResponseListener) {
+        this.eventListener = eventListener
         if (this.initStatus == InitStatus.Initialised) {
-
-            val script = function.trimIndent()
-
-            val handler = Handler(Looper.getMainLooper())
-            handler.post {
-                Log.i(TAG, "js event sent")
-                webview.evaluateJavascript(script) {
-                    Log.i(TAG, "js event executed")
-                }
-            }
-        }
-    }
-
-
-    fun sendHasNfts() {
-        if (this.initStatus == InitStatus.Initialised) {
-
             val script = """
                 (async function() 
                 {
@@ -263,8 +265,6 @@ class CereModule(private val context: Context) {
             }
         }
     }
-
-    fun hasNftsResponse() = hasNfts
 
     /**
      * Send event to RXB.
@@ -338,6 +338,6 @@ class CereModule(private val context: Context) {
     @JavascriptInterface
     fun onJSActionResult(result: String) {
         Log.i(TAG, "Event received with result $result")
-        hasNfts = result
+        eventListener?.onJSResponseReceived(result)
     }
 }
