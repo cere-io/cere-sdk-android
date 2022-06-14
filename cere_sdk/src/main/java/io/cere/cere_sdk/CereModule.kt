@@ -236,12 +236,18 @@ class CereModule(private val context: Context) {
     @RequiresApi(Build.VERSION_CODES.N)
     fun hasNfts(consumer: Consumer<String>) {
         if (this.initStatus == InitStatus.Initialised) {
+
+            val script = """
+                (async function() {
+                    cereSDK.hasNfts();
+            })();""".trimIndent()
+
             val handler = Handler(Looper.getMainLooper())
             handler.post {
                 Log.i(TAG, "hasNfts event sent")
-                webview.evaluateJavascript("javascript:cereSDK.hasNfts();") {
+                webview.evaluateJavascript(script) {
                     consumer.accept(it)
-                    Log.i(TAG, "has token sent")
+                    Log.i(TAG, "has token received with $it")
                 };
             }
         }
