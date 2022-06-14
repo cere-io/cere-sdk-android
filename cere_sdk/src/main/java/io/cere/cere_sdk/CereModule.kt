@@ -5,18 +5,12 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
-import android.webkit.ValueCallback
 import android.webkit.WebView
-import androidx.annotation.RequiresApi
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.atomic.AtomicReference
-import java.util.function.Consumer
 
 
 const val baseUrl: String = "https://sdk.dev.cere.io/common/native.html"
@@ -130,6 +124,7 @@ class CereModule(private val context: Context) {
     private lateinit var token: String
 
     private var initStatus: InitStatus = InitStatus.Uninitialised
+    private var hasNfts: String = "NO_RESPONSE"
 
     private val version: String = io.cere.cere_sdk.BuildConfig.VERSION_NAME
 
@@ -233,56 +228,25 @@ class CereModule(private val context: Context) {
         }
     }
 
-    /**
-     * Has nfts call.
-     */
-//    ASYNC countdown latch
-    @RequiresApi(Build.VERSION_CODES.N)
-    fun hasNfts(consumer: Consumer<String>): String {
+
+    fun sendHasNfts() {
         if (this.initStatus == InitStatus.Initialised) {
 
             val script = """
-                (async () => {
-                    return await cereSDK.hasNfts();
-            })();""".trimIndent()
+                Android.onJSActionResult(await cereSDK.hasNfts());
+                """.trimIndent()
 
             val handler = Handler(Looper.getMainLooper())
-
-            val latch = CountDownLatch(1)
-            val result: AtomicReference<String> = AtomicReference()
-            handler.post(Runnable {
+            handler.post {
                 Log.i(TAG, "hasNfts event sent")
                 webview.evaluateJavascript(script) {
-                    Log.i(TAG, "has token received with $it")
-                    result.set(it);
-                    latch.countDown()
-                }
-            })
-            latch.await()
-            return result.get()
+                    Log.i(TAG, "has token received executed")
+                };
+            }
         }
-        return "NOT_INITIALISED"
     }
 
-//    @RequiresApi(Build.VERSION_CODES.N)
-//    fun hasNfts(consumer: Consumer<String>) {
-//        if (this.initStatus == InitStatus.Initialised) {
-//
-//            val script = """
-//                (async () => {
-//                    cereSDK.hasNfts();
-//            })();""".trimIndent()
-//
-//            val handler = Handler(Looper.getMainLooper())
-//            handler.post {
-//                Log.i(TAG, "hasNfts event sent")
-//                webview.evaluateJavascript(script) {
-//                    consumer.accept(it)
-//                    Log.i(TAG, "has token received with $it")
-//                };
-//            }
-//        }
-//    }
+    fun hasNftsResponse() = hasNfts
 
     /**
      * Send event to RXB.
@@ -353,4 +317,9 @@ class CereModule(private val context: Context) {
         notifyListeners(eventName, activity)
     }
 
+    @JavascriptInterface
+    fun onJSActionResult(result: String) {
+        Log.i(TAG, "Event received with result $result")
+        hasNfts = result
+    }
 }
