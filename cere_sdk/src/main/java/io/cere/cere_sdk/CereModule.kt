@@ -239,7 +239,7 @@ class CereModule(private val context: Context) {
 
             val script = """
                 (async function() {
-                    cereSDK.hasNfts();
+                    await cereSDK.hasNfts();
             })();""".trimIndent()
 
             val handler = Handler(Looper.getMainLooper())
