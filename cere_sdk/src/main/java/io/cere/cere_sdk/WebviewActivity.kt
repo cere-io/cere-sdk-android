@@ -4,7 +4,6 @@ import android.os.Build
 import android.os.Bundle
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.widget.RelativeLayout
 import androidx.annotation.RequiresApi
@@ -13,6 +12,10 @@ import androidx.appcompat.app.AppCompatActivity
 class WebviewActivity : AppCompatActivity() {
 
     private lateinit var webview: WebView
+
+    companion object {
+        var active = false
+    }
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,6 +51,17 @@ class WebviewActivity : AppCompatActivity() {
         super.onDestroy()
         detachBridgeView()
         cereModule().activity = null
+        active = false
+    }
+
+    override fun onStart() {
+        super.onStart()
+        active = true
+    }
+
+    override fun onStop() {
+        super.onStop()
+        active = false
     }
 
     private fun cereModule() = CereModule.getInstance(this.application)

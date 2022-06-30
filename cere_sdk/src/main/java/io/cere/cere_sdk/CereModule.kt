@@ -2,6 +2,7 @@ package io.cere.cere_sdk
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.ActivityManager
 import android.app.Application
 import android.content.Context
 import android.content.Intent
@@ -310,9 +311,11 @@ class CereModule(private val context: Context) {
     @JavascriptInterface
     fun engagementReceived() {
         Log.i(TAG, "engagement received on android")
-        val intent = Intent(context, WebviewActivity::class.java)
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        context.startActivity(intent)
+        if(!WebviewActivity.active) {
+            val intent = Intent(context, WebviewActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(intent)
+        }
     }
 
     @JavascriptInterface
