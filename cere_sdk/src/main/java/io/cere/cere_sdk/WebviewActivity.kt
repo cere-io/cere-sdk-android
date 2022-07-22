@@ -1,13 +1,18 @@
 package io.cere.cere_sdk
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.RelativeLayout
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import java.net.URI
+
 
 class WebviewActivity : AppCompatActivity() {
 
@@ -30,6 +35,19 @@ class WebviewActivity : AppCompatActivity() {
 
     private fun attachBridgeView(wv: WebView, layoutParams: ViewGroup.LayoutParams?) {
         webview = wv
+        webview.webViewClient = object : WebViewClient() {
+            override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
+                if (url.endsWith("browser")) {
+                    val intent = Intent(Intent.ACTION_VIEW)
+                    intent.data = Uri.parse(url)
+                    val title = "Select a browser"
+                    val chooser = Intent.createChooser(intent, title)
+                    startActivity(chooser)
+                    return true //cancel the current load
+                }
+                return false //continue the current load
+            }
+        }
         setContentView(wv, layoutParams ?: createParams())
     }
 
