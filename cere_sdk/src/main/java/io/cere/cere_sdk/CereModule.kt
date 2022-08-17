@@ -283,7 +283,7 @@ class CereModule(private val context: Context) {
                     timestamp,
                     signature
                 };
-                if($payload) {
+                if($payload + "") {
                     Object.assign(payload, JSON.parse($payload));
                 }
                 console.log(JSON.stringify(payload))
