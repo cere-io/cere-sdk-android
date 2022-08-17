@@ -7,11 +7,14 @@ import android.os.Bundle
 import android.util.Log
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.webkit.ConsoleMessage
+import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.RelativeLayout
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+
 
 class WebviewActivity : AppCompatActivity() {
 
@@ -47,6 +50,14 @@ class WebviewActivity : AppCompatActivity() {
                     return true //cancel the current load
                 }
                 return false //continue the current load
+            }
+        }
+
+        webview.webChromeClient = object: WebChromeClient(){
+
+            override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean {
+                Log.i(CereModule.TAG, consoleMessage.message())
+                return true
             }
         }
         setContentView(wv, layoutParams ?: createParams())
