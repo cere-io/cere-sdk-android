@@ -38,6 +38,7 @@ class WebviewActivity : AppCompatActivity() {
             override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
                 if (url.endsWith("browser")) {
                     val intent = Intent(Intent.ACTION_VIEW)
+                    Log.i(CereModule.TAG, "Url before processing $url")
                     intent.data = Uri.parse(url)
                     Log.i(CereModule.TAG, "Open browser window for ${intent.data}")
                     val title = "Select a browser"
