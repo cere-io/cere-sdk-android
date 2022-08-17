@@ -275,18 +275,20 @@ class CereModule(private val context: Context) {
      */
     @JvmOverloads fun sendTrustedEvent(eventType: String, payload: String = "") {
         if (this.initStatus == InitStatus.Initialised) {
-            val script = """
+            val script = StringBuilder("""
                 (async function() {
                 let timestamp = Number(new Date());
                 let signature = await cereSDK.signMessage(timestamp);
                 let payload = {
                     timestamp,
                     signature
-                };
-                let extraPayload = JSON.parse('$payload' + "");
-                if(extraPayload) {
-                    Object.assign(payload, extraPayload);
-                }
+                }; 
+                """)
+
+            if(!payload.isNullOrBlank()){
+                script.append(" Object.assign(payload, JSON.parse('$payload')); ");
+            }
+            script.append("""
                 console.log(JSON.stringify(payload))
                 return cereSDK.sendEvent('$eventType', payload).
                         then(() => {
@@ -295,14 +297,16 @@ class CereModule(private val context: Context) {
                         catch(err => {
                             console.log(`$eventType sending error` + err);
                         });
-            })();""".trimIndent()
+            })();
+            """);
 
             val handler = Handler(Looper.getMainLooper())
+            val scriptString = script.toString().trimIndent();
 
             handler.post {
                 Log.i(TAG, "evaluate send event javascript")
-                Log.i(TAG, script)
-                webview.evaluateJavascript(script)
+                Log.i(TAG, scriptString)
+                webview.evaluateJavascript(scriptString)
                 {
                     Log.i(TAG, "send event $eventType executed")
                 }
