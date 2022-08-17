@@ -272,7 +272,7 @@ class CereModule(private val context: Context) {
      * @param eventType: Type of event for 3rd_party. For example `APP_LAUNCHED`.
      * @param payload: Optional parameter which can be passed with event. It should contain serialised json payload associated with eventType.
      */
-    fun sendTrustedEvent(eventType: String, payload: String = "") {
+    @JvmOverloads fun sendTrustedEvent(eventType: String, payload: String = "") {
         if (this.initStatus == InitStatus.Initialised) {
             val script = """
                 (async function() {
@@ -280,9 +280,11 @@ class CereModule(private val context: Context) {
                 let signature = await cereSDK.signMessage(timestamp);
                 let payload = {
                     timestamp,
-                    signature,
-                    $payload
+                    signature
                 };
+                if($payload) {
+                    Object.assign(payload,JSON.parse($payload));
+                }
                 console.log(JSON.stringify(payload))
                 return cereSDK.sendEvent('$eventType', payload).
                         then(() => {
