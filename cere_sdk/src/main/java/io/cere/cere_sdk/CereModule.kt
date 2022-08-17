@@ -283,8 +283,9 @@ class CereModule(private val context: Context) {
                     timestamp,
                     signature
                 };
-                if($payload + "") {
-                    Object.assign(payload, JSON.parse($payload));
+                let extraPayload = JSON.parse($payload + "");
+                if(extraPayload) {
+                    Object.assign(payload, extraPayload);
                 }
                 console.log(JSON.stringify(payload))
                 return cereSDK.sendEvent('$eventType', payload).
