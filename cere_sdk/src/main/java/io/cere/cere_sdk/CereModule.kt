@@ -222,6 +222,7 @@ class CereModule(private val context: Context) {
 
             handler.post {
                 Log.i(TAG, "evaluate send event javascript")
+                Log.i(TAG, script)
                 webview.evaluateJavascript(script)
                 {
                     Log.i(TAG, "send event $eventType executed")
@@ -283,7 +284,7 @@ class CereModule(private val context: Context) {
                     signature
                 };
                 if($payload) {
-                    Object.assign(payload,JSON.parse($payload));
+                    Object.assign(payload, JSON.parse($payload));
                 }
                 console.log(JSON.stringify(payload))
                 return cereSDK.sendEvent('$eventType', payload).
@@ -299,6 +300,7 @@ class CereModule(private val context: Context) {
 
             handler.post {
                 Log.i(TAG, "evaluate send event javascript")
+                Log.i(TAG, script)
                 webview.evaluateJavascript(script)
                 {
                     Log.i(TAG, "send event $eventType executed")
