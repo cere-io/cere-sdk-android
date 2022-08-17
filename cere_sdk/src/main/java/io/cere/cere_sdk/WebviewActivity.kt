@@ -11,8 +11,6 @@ import android.webkit.WebViewClient
 import android.widget.RelativeLayout
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import java.net.URI
-
 
 class WebviewActivity : AppCompatActivity() {
 

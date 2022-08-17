@@ -208,13 +208,13 @@ class CereModule(private val context: Context) {
         if (this.initStatus == InitStatus.Initialised) {
             val script = """
                 (async function() {
-                    console.log('send event dialog');
-                    return cereSDK.sendEvent('${eventType}', ${payload}).
+                    console.log('send event');
+                    return cereSDK.sendEvent('$eventType', $payload).
                         then(() => {
-                            console.log(`event ${eventType} sent`);
+                            console.log(`event $eventType sent`);
                         }).
                         catch(err => {
-                            console.log(`${eventType} sending error` + err);
+                            console.log(`$eventType sending error` + err);
                         });
                 })();""".trimIndent()
 
@@ -270,8 +270,9 @@ class CereModule(private val context: Context) {
     /**
      * Send event to RXB.
      * @param eventType: Type of event for 3rd_party. For example `APP_LAUNCHED`.
+     * @param payload: Optional parameter which can be passed with event. It should contain serialised json payload associated with eventType.
      */
-    fun sendTrustedEvent(eventType: String) {
+    fun sendTrustedEvent(eventType: String, payload: String = "") {
         if (this.initStatus == InitStatus.Initialised) {
             val script = """
                 (async function() {
@@ -279,10 +280,17 @@ class CereModule(private val context: Context) {
                 let signature = await cereSDK.signMessage(timestamp);
                 let payload = {
                     timestamp,
-                    signature
+                    signature,
+                    $payload
                 };
                 console.log(JSON.stringify(payload))
-                cereSDK.sendEvent('${eventType}', payload);
+                return cereSDK.sendEvent('$eventType', payload).
+                        then(() => {
+                            console.log(`event $eventType sent`);
+                        }).
+                        catch(err => {
+                            console.log(`$eventType sending error` + err);
+                        });
             })();""".trimIndent()
 
             val handler = Handler(Looper.getMainLooper())
