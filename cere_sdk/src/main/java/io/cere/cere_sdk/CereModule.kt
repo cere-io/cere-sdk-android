@@ -204,7 +204,7 @@ class CereModule(private val context: Context) {
      * @param eventType: Type of event. For example `APP_LAUNCHED`.
      * @param payload: Optional parameter which can be passed with event. It should contain serialised json payload associated with eventType.
      */
-    fun sendEvent(eventType: String, payload: String = "") {
+    @JvmOverloads fun sendEvent(eventType: String, payload: String = "") {
         if (this.initStatus == InitStatus.Initialised) {
             val script = """
                 (async function() {
