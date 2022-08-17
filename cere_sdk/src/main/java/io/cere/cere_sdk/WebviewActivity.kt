@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.webkit.WebView
@@ -38,6 +39,7 @@ class WebviewActivity : AppCompatActivity() {
                 if (url.endsWith("browser")) {
                     val intent = Intent(Intent.ACTION_VIEW)
                     intent.data = Uri.parse(url)
+                    Log.i(CereModule.TAG, "Open browser window for ${intent.data}")
                     val title = "Select a browser"
                     val chooser = Intent.createChooser(intent, title)
                     startActivity(chooser)
