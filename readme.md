@@ -99,6 +99,17 @@ For quick integration test, you can use "APP_LAUNCHED_TEST" event, which will tr
 
 Take a look on [Example application](https://github.com/cere-io/sdk-android-example).
 
+## Documentation
+
+[Documentation site](https://cere-io.github.io/cere-sdk-android/)
+
+## Library publishing
+
+On github project go to releases and create new release with same version as in root build.gradle
+```
+project.ext.set("versionName", "1.0.0")
+```
+
 ## Release notes
 ### vNext
 *
@@ -110,12 +121,3 @@ Take a look on [Example application](https://github.com/cere-io/sdk-android-exam
 * Add optional onboarding token parameter to init method
 ### v1.0.0
 * First release
-
-[Documentation site](https://cere-io.github.io/cere-sdk-android/)
-
-## Library publishing
-
-On github project go to releases and create new release with same version as in root build.gradle
-```
-project.ext.set("versionName", "1.0.0")
-```
