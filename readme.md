@@ -115,8 +115,6 @@ Take a look on [Example application](https://github.com/cere-io/sdk-android-exam
 
 ## Library publishing
 
-See [dcendents](https://github.com/dcendents/android-maven-gradle-plugin)
-
 On github project go to releases and create new release with same version as in root build.gradle
 ```
 project.ext.set("versionName", "1.0.0")
