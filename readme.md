@@ -1,3 +1,8 @@
+# Repository Details
+Old Url|Current URL
+--- |--- |
+https://github.com/cere-io/sdk-android|https://github.com/cere-io/cere-sdk-android
+
 ## Release notes
 ### vNext
 *
