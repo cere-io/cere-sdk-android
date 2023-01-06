@@ -36,7 +36,7 @@ export githubToken=slfgkhlkhslkdfhlsd
 ./gradlew :docs:orchidDeploy -PorchidEnvironment=prod
 ```
 
-[Documentation site](https://cere-io.github.io/sdk-android/)
+[Documentation site](https://cere-io.github.io/cere-sdk-android/)
 
 ## Library publishing
 
